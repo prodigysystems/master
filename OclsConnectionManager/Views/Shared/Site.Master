@@ -1,0 +1,186 @@
+﻿<%@ Master Language="VB" Inherits="System.Web.Mvc.ViewMasterPage" %>
+
+<!DOCTYPE html>
+<html>
+<head id="Head1" runat="server">
+	<title><asp:ContentPlaceHolder ID="TitleContent" runat="server" /></title>
+	<link href="../../Content/Site.css" rel="stylesheet" type="text/css" />
+    
+    <%= Html.Telerik().StyleSheetRegistrar().DefaultGroup(Function(group) group.Add("telerik.common.min.css").Add("telerik.office2010blue.min.css").Combined(True).Compress(True).UseTelerikContentDeliveryNetwork(False))%>
+   
+    <script type="text/javascript">
+
+        var loadingTimer = null;
+
+        function masterAjaxStart() 
+        {
+            loadingTimer = setTimeout("$('#LoadingDiv').show()", 200);
+        }
+
+        function masterAjaxStop() {
+            clearTimeout(loadingTimer);
+            $("#LoadingDiv").hide();
+        }
+
+        function onMasterDocumentReady() {
+
+            $("#LoadingDiv").ajaxStart(function () {
+                loadingTimer = setTimeout("$('#LoadingDiv').show()", 200);
+            });
+
+            $("#LoadingDiv").ajaxStop(function () {
+                masterAjaxStop();
+            });
+
+            $.ajaxSetup({
+                error: function (jqXHR, exception) {
+                    if (jqXHR.status == 501) {
+                        alert('Your session has expired due to inactivity.  Click OK to login again.');
+                        window.location.href = '<%= OclsConnectionManager.RouteConfig.GetActionUri("Account", "Login")%>';
+                }
+                else {
+                    alert('An error occurred on the server.  Please retry your request.');
+                }
+                }
+            });
+        }
+    </script>
+    
+
+
+</head>
+
+<body>
+    <div id="LoadingDiv" style="display:none">
+        <div class="progressBackgroundFilter" id="progressBackgroundFilter">
+        </div>
+        <div class="processMessage" id="processMessage">
+            <br />
+            Please wait...<br />
+            <br />
+            <img alt="Spinner" src="<%: Url.Content("~/Content/Images/Indicator.gif") %>" /><br />
+            <br />
+        </div>
+    </div>
+
+	<div class="page">
+        <header>
+        <table style="border:none 0;padding:0; border-spacing:0">
+            <tr>
+                <td style="width:260px;">
+                    <img src="<%: Url.Content("~/Content/Images/logo.png") %>" /></td>
+                <td style="width:740px;text-align:right;vertical-align:bottom">
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" align="right">
+                    <span style="color:red;font-weight:bold;font-size:14pt"><%: System.Configuration.ConfigurationManager.AppSettings("InstanceTitle") %></span><br />
+                <%
+                If Request.IsAuthenticated AndAlso Not Page.User.IsInRole("Inactive") Then
+                %>
+                Welcome <b><%: Page.User.Identity.Name%></b>
+                [ <%: Html.ActionLink("My Account", "Manage", "Account")%> ]
+                [ <%: Html.ActionLink("Log Off", "LogOff", "Account")%> ]
+                <%
+                End If
+
+                %>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <img src="<%: Url.Content("~/Content/Images/navbar.png") %>" width="100%" />
+                </td>
+            </tr>
+           
+        </table>
+        </header>
+        <!-- Added to simplify navigation of the website -->
+          <%
+              If Request.IsAuthenticated AndAlso Not Page.User.IsInRole("Inactive") Then
+              
+                %>
+                    <nav>
+            <div>
+                 <div style="display: inline;">
+                    <a style="text-decoration: none; font-weight: bolder; color: #3B6187;" href="<%: Url.Action("Index","RemoteAuthentication")  %>">Remote Authentication</a>
+                </div>
+                <div style="display: inline;">
+                    &nbsp;|&nbsp;
+                </div>
+                <div style="display: inline;">
+                    <a style="text-decoration: none;font-weight: bolder; color: #3B6187;" href="<%: Url.Action("Index","EzProxy")  %>">EZproxy</a>
+                </div>
+                <div style="display: inline;">
+                    &nbsp;|&nbsp;
+                </div>
+                <div style="display: inline;">
+                    <a style="text-decoration: none;font-weight: bolder; color: #3B6187;" href="<%: Url.Action("Index","IpAddress")  %>">Ip Addresses</a>
+                </div>            
+              
+                <%
+                    If Page.User.IsInRole("Administrator") Then
+                %>
+                    
+  
+                    <div style="display: inline;">
+                        &nbsp;|&nbsp;
+                    </div>
+                    <div style="display: inline;">
+                        <a style="text-decoration: none;font-weight: bolder; color: #3B6187;" href="<%: Url.Action("Index","College")  %>">Colleges</a>
+                    </div>
+                      <div style="display: inline;">
+                        &nbsp;|&nbsp;
+                    </div>
+                    <div style="display: inline;">
+                        <a style="text-decoration: none;font-weight: bolder; color: #3B6187;" href="<%: Url.Action("Index","ConnectionMethod")  %>">Connection Methods</a>
+                    </div>
+                    <div style="display: inline;">
+                        &nbsp;|&nbsp;
+                    </div>
+                    <div style="display: inline;">
+                        <a style="text-decoration: none;font-weight: bolder; color: #3B6187;" href="<%: Url.Action("UserAdmin","Account")  %>">Users</a>
+                    </div>
+                <%
+                    End If
+
+                %>
+            </div>
+        </nav>
+                <%
+                End If
+
+                %>
+
+
+
+  
+		<section id="main">
+			<asp:ContentPlaceHolder ID="MainContent" runat="server" />
+              <%: Html.Telerik().ScriptRegistrar() _
+                      .Globalization(True). _
+                      DefaultGroup(Sub(group)
+                                       group.Add("~/Scripts/jquery.unobtrusive-ajax.min.js")
+                                       group.Add("telerik.common.js")
+                                       group.Add("telerik.draganddrop.js")
+                                       group.Add("telerik.window.min.js")
+                                       group.Add("telerik.list.min.js")
+                                       group.Add("telerik.combobox.min.js")
+                                       group.Add("jquery.validate.min.js")
+                                       group.Combined(False)
+                                       group.Compress(False)
+                                       group.UseTelerikContentDeliveryNetwork(False)
+                                   End Sub).OnDocumentReady("onMasterDocumentReady();").jQuery(True)
+
+%>
+            <asp:ContentPlaceHolder ID="ScriptsSection" runat="server">
+	</asp:ContentPlaceHolder>
+			<footer>
+			</footer>
+		</section>
+	</div>
+
+  
+</body>
+
+</html>
